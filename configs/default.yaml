@@ -1,0 +1,31 @@
+# rl-trading-agent default configuration
+# All hyperparameters in one place — easy to run ablation studies
+
+data:
+  ticker: "SPY"           # S&P 500 ETF — liquid, well-studied
+  start_date: "2015-01-01"
+  end_date: "2023-12-31"
+  train_ratio: 0.8        # 80% train, 20% test (time-based split)
+
+env:
+  window_size: 20         # How many past days the agent sees
+  initial_balance: 10000
+  transaction_cost: 0.001 # 0.1% per trade (realistic)
+  reward_type: "sharpe"   # Options: "return", "sharpe", "sortino"
+
+agent:
+  algorithm: "PPO"
+  policy: "MlpPolicy"
+  total_timesteps: 500000
+  learning_rate: 0.0003
+  n_steps: 2048           # Steps per PPO update
+  batch_size: 64
+  n_epochs: 10
+  gamma: 0.99             # Discount factor
+  ent_coef: 0.01          # Entropy bonus — encourages exploration
+  clip_range: 0.2         # PPO clip parameter
+  verbose: 1
+
+eval:
+  n_eval_episodes: 1      # Backtest is deterministic
+  log_interval: 10
