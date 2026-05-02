@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+results/tensorboard/
+results/*/checkpoints/
+data/AAPL_raw.csv
+data/SPY_raw.csv
+data/SPY_alpha.csv
+data/spy_response.json
+notebooks/Untitled.ipynb
+notebooks/.ipynb_checkpoints/
+notebooks/SPY_alpha.csv
+ppo_sharpe_test.zip
+results/ppo_sharpe_test.zip
