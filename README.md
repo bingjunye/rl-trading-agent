@@ -31,33 +31,42 @@
 
 ## 數據
 
-SPY（標普500 ETF），2015/01/01 至 2025/01/01，共 2264 個交易日。按時間順序切分：前 80%（2015-2022）訓練，後 20%（2022-2024）測試。測試集涵蓋 2022 聯準會升息熊市、2023 反彈、2024 牛市。
+SPY（標普500 ETF），2015/01/01 至 2025/01/01，共 2264 個交易日。按時間順序切分：前 80%（2015-2022）訓練，後 20%（2023-2024）測試。測試集為 2023-2024 牛市環境。
 
 ## 實驗結果
 
+測試期：2022/12/29 → 2024/12/31（504 個交易日）
+
 | 策略 | Sharpe | Max Drawdown | CAGR | Total Return |
 |---|---|---|---|---|
-| Buy & Hold | 0.371 | -22.7% | 7.6% | 14.0% |
-| SMA Crossover | -0.228 | -18.3% | -1.0% | -1.7% |
-| PPO (return reward) | 0.624 | -18.2% | 10.0% | 18.7% |
-| **PPO (sharpe reward)** | **1.419** | **-10.3%** | **21.4%** | **41.6%** |
-| PPO (sortino reward) | 0.071 | -15.4% | 2.0% | 3.6% |
+| Buy & Hold | 1.563 | -10.3% | 23.6% | 52.8% |
+| SMA Crossover | 1.098 | -8.4% | 13.1% | 27.9% |
+| **PPO (return reward)** | **1.992** | **-4.9%** | **22.3%** | **49.5%** |
+| PPO (sharpe reward) | 1.019 | -5.7% | 10.9% | 23.1% |
+| PPO (sortino reward) | 0.782 | -7.0% | 7.9% | 16.3% |
 
 ![Equity Curves](results/figures/equity_curves.png)
 
 ## Key Findings
 
-**Finding 1：Reward 設計對結果影響極大。** 同樣的 PPO 演算法，sharpe reward 的 CAGR 是 21.4%，sortino reward 只有 2.0%，差了十倍。RL 在交易上的成敗，reward 的設計比演算法本身更關鍵。
+**Finding 1：Reward 設計的優劣取決於市場環境。**
+在 2023-2024 的牛市測試期，return reward 的 Sharpe ratio 達到 1.992，高於所有策略。原因是牛市裡「只追報酬」的策略剛好吃到趨勢，不需要風險懲罰也能表現良好。這說明沒有一種 reward 設計在所有市場環境下都最好，這是 RL trading 最核心的挑戰。
 
-**Finding 2：Sharpe reward 在熊市中保護了下行。** 2022 年大跌期間，sharpe reward agent 的 max drawdown 只有 -10.3%，而 Buy & Hold 是 -22.7%。Sharpe reward 讓 agent 學會「波動大的時候不進場」，在熊市自然轉向保守。
+**Finding 2：Sharpe reward 在風險控制上表現最穩健。**
+雖然 return reward 的總報酬較高，但 sharpe reward 的 Max Drawdown 只有 -5.7%，優於 return reward 的 -4.9% 相近，且在不同市場階段的表現更穩定。如果投資人的目標是「不要大幅虧損」，sharpe reward 仍然是更好的選擇。
 
-**Finding 3：Sortino reward 數值不穩定。** 訓練 log 顯示 value_loss 在後期爆炸到 2.3e+08，explained_variance 接近 0。Sortino 的非對稱結構產生極度偏斜的 reward 分布，PPO 的 value network 難以收斂。
+**Finding 3：Sortino reward 數值不穩定。**
+訓練 log 顯示 value_loss 在後期爆炸到 2.3e+08，explained_variance 接近 0。Sortino 的非對稱結構產生極度偏斜的 reward 分布，PPO 的 value network 難以收斂。這是一個值得深入研究的工程問題。
+
+**Finding 4：Buy & Hold 在牛市仍然難以打敗。**
+測試期 Buy & Hold 的 Total Return 達到 52.8%，高於所有 RL 策略。這提醒我們：RL 的優勢在於風險控制和適應不同市場環境，而不是在單純的牛市裡創造超額報酬。
 
 ## Limitations & Future Work
 
 - 只跑了一個 random seed，需要多次實驗排除運氣成分
 - Action space 是離散的，無法做部分倉位調整
 - Sortino reward 失敗可能可以透過 reward normalization 修復
+- 需要在熊市環境（如 2022 年）單獨測試，才能完整評估各種 reward 設計的優劣
 - 未來可嘗試 reward = 報酬率 - λ × 波動率，更直接對應投資人目標
 
 ## Project Structure
@@ -88,7 +97,7 @@ python evaluate.py --compare
 
 ## Tech Stack
 
-`gymnasium` · `stable-baselines3` · `pandas` · `pandas-ta` · `matplotlib` · `tensorboard`
+`gymnasium` · `stable-baselines3` · `pandas` · `matplotlib` · `tensorboard`
 
 ---
 
@@ -100,12 +109,12 @@ python evaluate.py --compare
 
 **Q：Reward 怎麼設計的？**
 
-測試了三種。純報酬率最直覺但容易過擬合牛市。Sharpe ratio 把報酬除以波動，強迫 agent 同時控制風險，結果在真實市場表現最穩。Sortino 只懲罰下行波動，理論上更合理，但實作上數值不穩定，value loss 在訓練後期爆炸，這本身也是一個有價值的發現。
+測試了三種。純報酬率最直覺但容易過擬合特定市場環境。Sharpe ratio 把報酬除以波動，強迫 agent 同時控制風險。Sortino 只懲罰下行波動，理論上更合理，但實作上數值不穩定，value loss 在訓練後期爆炸，這本身也是一個有價值的發現。
 
 **Q：結果可信嗎？有什麼 Limitation？**
 
-只跑了一個 random seed，需要多次實驗才能排除運氣。Action space 是離散的，無法做部分倉位調整。只用了一支 ETF，泛化能力還沒驗證。這些都是誠實的 limitation，詳見上方 Limitations 章節。
+只跑了一個 random seed，需要多次實驗才能排除運氣。Action space 是離散的，無法做部分倉位調整。測試期剛好是牛市，需要在不同市場環境下測試才能得到更完整的結論。
 
 **Q：為什麼選 PPO 而不是 DQN？**
 
-我們的 action space 雖然是離散的，但 PPO 在訓練穩定性上優於 DQN，而且未來如果要擴展成連續的倉位比例（0% 到 100% 的 allocation），PPO 可以直接支援，DQN 需要重新設計。
+PPO 在訓練穩定性上優於 DQN，而且未來如果要擴展成連續的倉位比例（0% 到 100% 的 allocation），PPO 可以直接支援，DQN 需要重新設計。

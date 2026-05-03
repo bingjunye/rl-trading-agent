@@ -106,8 +106,8 @@ def plot_equity_curves(curves: dict, save_path: str = "results/figures/equity_cu
         "Buy & Hold": "#6b7280",
         "SMA Crossover": "#f59e0b",
         "PPO (return reward)": "#3b82f6",
-        "PPO (Sharpe reward)": "#10b981",
-        "PPO (Sortino reward)": "#8b5cf6",
+        "PPO (sharpe reward)": "#10b981",
+        "PPO (sortino reward)": "#f43f5e",
     }
     styles = {
         "Buy & Hold": "--",
