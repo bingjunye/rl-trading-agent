@@ -45,7 +45,7 @@ SPY（標普500 ETF），2015/01/01 至 2025/01/01，共 2264 個交易日。按
 | PPO (sharpe reward) | 1.019 | -5.7% | 10.9% | 23.1% |
 | PPO (sortino reward) | 0.782 | -7.0% | 7.9% | 16.3% |
 
-![Equity Curves](results/figures/equity_curves.png)
+![Equity Curves](results/figures/equity_curves_v2.png)
 
 ## Key Findings
 
