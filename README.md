@@ -89,3 +89,23 @@ python evaluate.py --compare
 ## Tech Stack
 
 `gymnasium` · `stable-baselines3` · `pandas` · `pandas-ta` · `matplotlib` · `tensorboard`
+
+---
+
+## 常見疑問
+
+**Q：為什麼用 RL，不用其他方法？**
+
+交易是一個序列決策問題，今天買了之後明天的選擇就受限了，而且 reward 是延遲的，不知道今天的決策幾天後才知道對不對。這兩個特性讓監督式學習處理不了，RL 天生就是為這種問題設計的。
+
+**Q：Reward 怎麼設計的？**
+
+測試了三種。純報酬率最直覺但容易過擬合牛市。Sharpe ratio 把報酬除以波動，強迫 agent 同時控制風險，結果在真實市場表現最穩。Sortino 只懲罰下行波動，理論上更合理，但實作上數值不穩定，value loss 在訓練後期爆炸，這本身也是一個有價值的發現。
+
+**Q：結果可信嗎？有什麼 Limitation？**
+
+只跑了一個 random seed，需要多次實驗才能排除運氣。Action space 是離散的，無法做部分倉位調整。只用了一支 ETF，泛化能力還沒驗證。這些都是誠實的 limitation，詳見上方 Limitations 章節。
+
+**Q：為什麼選 PPO 而不是 DQN？**
+
+我們的 action space 雖然是離散的，但 PPO 在訓練穩定性上優於 DQN，而且未來如果要擴展成連續的倉位比例（0% 到 100% 的 allocation），PPO 可以直接支援，DQN 需要重新設計。
