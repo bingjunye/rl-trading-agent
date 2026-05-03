@@ -186,7 +186,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     config = load_config(args.config)
-    df = download_data(config["data"]["ticker"], config["data"]["start_date"], config["data"]["end_date"])
+    df = download_data("SPY", "2015-01-01", "2025-01-01")
     _, test_df = train_test_split(df, config["data"]["train_ratio"])
     test_prices = test_df["Close"].squeeze()
     n_years = len(test_df) / 252
